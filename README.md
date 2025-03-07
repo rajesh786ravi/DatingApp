@@ -14,7 +14,8 @@ Getting Started
 1. Download and install the app  
 2. Sign up or log in  
 3. Set up your profile  
-4. Start swiping and matching  
+4. Start swiping and matching
+5. Audio calls
 
 Upcoming Features  
 - Video calls  
