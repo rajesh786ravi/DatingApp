@@ -54,22 +54,16 @@ public class AccountController(DataContext context) : BaseApiController
     public async Task<bool> ResetPassword(RegisterDTO registerDTO)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.UserName.ToLower() == registerDTO.UserName.ToLower());
-
         if (user == null)
         {
             return false; // User not found
         }
-
         using var hmac = new HMACSHA512(); // Generate new salt
         user.PasswordSalt = hmac.Key;
         user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password));
-
         await context.SaveChangesAsync();
         return true; // Password reset successfully
     }
-
-
-
 
     private async Task<bool> UserExists(string username)
     {
