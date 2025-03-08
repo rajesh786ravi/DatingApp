@@ -114,7 +114,7 @@ public class EmailService
     }
 }
 
-public class MyDelegateService
+public class MyDelegateService // Created my delegate service 
 {
     public MyDelegateService() { } // Ensure this exists
     private readonly Func<int, string>? _operation;
