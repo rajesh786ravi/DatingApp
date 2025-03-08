@@ -1,41 +1,33 @@
 pipeline {
-    agent any  // Run on any available Jenkins agent
+    agent any
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/rajesh786ravi/DatingApp.git'
-            }
-        }
-        
-        stage('Restore Dependencies') {
-            steps {
-                sh 'dotnet restore'
+                git 'https://github.com/rajesh786ravi/DatingApp.git'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'dotnet build --configuration Release'
+                dir('API') {
+                    sh 'dotnet build'
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                sh 'dotnet test --no-build --verbosity normal'
-            }
-        }
-
-        stage('Publish') {
-            steps {
-                sh 'dotnet publish -c Release -o publish_output'
+                dir('API') {
+                    sh 'dotnet test'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                // Add deployment steps if needed
+                echo 'Deploying API...'
+                // Add your deployment commands here
             }
         }
     }
