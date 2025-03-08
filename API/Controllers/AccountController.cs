@@ -88,7 +88,7 @@ public class AccountController(DataContext context, EmailService emailService, M
         var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.UserName.ToLower());
         if (user == null)
         {
-            return Unauthorized("Invalid username");
+            return Unauthorized("Invalid username.");
         }
         if (user.PasswordSalt != null && user.PasswordHash != null)
         {
