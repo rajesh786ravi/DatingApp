@@ -13,11 +13,7 @@ builder.Services.AddDbContext<DataContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Registering the delegate
 builder.Services.AddSingleton<Func<int, string>>(provider => num => $"Processed Number: {num}");
-
-// Register the service that depends on the delegate
-builder.Services.AddSingleton<MyDelegateService>();
 
 builder.Services.AddSingleton<EmailService>();
 
@@ -29,8 +25,8 @@ builder.Services.AddOpenApi();
 // Add Swagger/OpenAPI services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 // Registering Delegate in DI Container 
-builder.Services.AddSingleton<Func<int, string>>(x => num => $"Number: {num}");
 builder.Services.AddSingleton<MyDelegateService>();
 
 var app = builder.Build();

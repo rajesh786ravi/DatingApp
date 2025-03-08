@@ -10,8 +10,9 @@ namespace API.Controllers;
 public class AccountController(DataContext context, EmailService emailService, MyDelegateService myDelegateService) : BaseApiController
 {
     private readonly EmailService _emailService = emailService;
+
     private readonly DataContext _context = context;
-    private readonly MyDelegateService _myDelegateService = myDelegateService;
+    private readonly MyDelegateService _myDelegateService = myDelegateService ?? throw new ArgumentNullException(nameof(myDelegateService));
 
     [HttpGet("run-delegate")] // account/run-delegate
     public IActionResult RunDelegate()
@@ -33,6 +34,7 @@ public class AccountController(DataContext context, EmailService emailService, M
         };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+        System.Console.WriteLine(registerDTO.UserName + "Registered successfully.");
         _emailService.SendEmail(registerDTO.UserName, "Registered successfully.");
         return user;
     }
@@ -48,12 +50,15 @@ public class AccountController(DataContext context, EmailService emailService, M
             return false; // User does not exist, so nothing to delete
         }
         // Verify password
-        using var hmac = new HMACSHA512(user.PasswordSalt); // Use stored salt
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password));
-        // Compare computed hash with stored hash
-        if (!computedHash.SequenceEqual(user.PasswordHash))
+        if (user.PasswordSalt != null && user.PasswordHash != null)
         {
-            return false; // Passwords do not match
+            using var hmac = new HMACSHA512(user.PasswordSalt); // Use stored salt
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDTO.Password));
+            // Compare computed hash with stored hash
+            if (!computedHash.SequenceEqual(user.PasswordHash))
+            {
+                return false; // Passwords do not match
+            }
         }
         // Remove the user
         _context.Users.Remove(user);
@@ -81,15 +86,22 @@ public class AccountController(DataContext context, EmailService emailService, M
     public async Task<ActionResult<AppUser>> Login(LoginDTO loginDTO)
     {
         var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName.ToLower() == loginDTO.UserName.ToLower());
-        if (user == null) return Unauthorized("Invalid username");
-        using var hmac = new HMACSHA512(user.PasswordSalt);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDTO.Password));
-        if (!computedHash.SequenceEqual(user.PasswordHash)) return Unauthorized("Invalid password");
+        if (user == null)
+        {
+            return Unauthorized("Invalid username");
+        }
+        if (user.PasswordSalt != null && user.PasswordHash != null)
+        {
+            using var hmac = new HMACSHA512(user.PasswordSalt);
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDTO.Password));
+            if (!computedHash.SequenceEqual(user.PasswordHash)) return Unauthorized("Invalid password");
+        }
         return user;
     }
 
     private async Task<bool> UserExists(string username)
     {
+        System.Console.WriteLine(username + ": Already exists.");
         return await _context.Users.AnyAsync(x => x.UserName.ToLower() == username.ToLower());
     }
 }
@@ -104,7 +116,8 @@ public class EmailService
 
 public class MyDelegateService
 {
-    private readonly Func<int, string> _operation;
+    public MyDelegateService() { } // Ensure this exists
+    private readonly Func<int, string>? _operation;
 
     public MyDelegateService(Func<int, string> operation)
     {
@@ -113,6 +126,6 @@ public class MyDelegateService
 
     public void Run()
     {
-        Console.WriteLine(_operation(5));  // Call function delegate
+        if (_operation != null) Console.WriteLine(_operation(5));  // Call function delegate
     }
 }
