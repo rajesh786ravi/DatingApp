@@ -11,18 +11,36 @@ namespace API.Controllers;
 public class PracticeController() : ControllerBase
 {
     [HttpGet("CheckPalindromeOrNot")]
-    public bool CheckPalindromeOrNot(string input)
+    public string CheckPalindromeOrNot(string input)
     {
-        input = input.ToLower();
+        string inputCloned = input;
+        inputCloned = inputCloned.ToLower();
         int start = 0;
         int end = input.Length - 1;
         while (start < end)
         {
-            if (input[start] != input[end]) return false;
+            if (inputCloned[start] != inputCloned[end]) return $"{input} is not a palindrome.";
             start++;
             end--;
         }
-        return true;
+        return $"{input} is a palindrome.";
+    }
+
+    [HttpGet("CheckPrimeNumberOrNot")]
+    public string CheckPrimeNumberOrNot(int input)
+    {
+        if (input < 2)
+        {
+            return $"{input} is not a prime.";
+        }
+        for (int i = 2; i * i <= input; i++)
+        {
+            if (input % i == 0)
+            {
+                return $"{input} is not a prime.";
+            }
+        }
+        return $"{input} is a prime.";
     }
 
     [HttpPost("MergeArray")]
