@@ -1,7 +1,11 @@
 using API.Data;
+using API.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddScoped<MatchService>();
 
 // Add services to the container.
 builder.Services.AddControllers();  //Just adding the controller
