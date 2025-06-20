@@ -8,7 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<MatchService>();
 
 // Add services to the container.
-builder.Services.AddControllers();  //Just adding the controller
+builder.Services.AddControllers();  //Just adding the controller's
 
 // Add DbContext to the container.
 builder.Services.AddDbContext<DataContext>(opt =>
