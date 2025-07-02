@@ -126,6 +126,8 @@ public class MyDelegateService // Created my delegate service
 
     public void Run()
     {
-        if (_operation != null) Console.WriteLine(_operation(5));  // Call function delegate
+        if (_operation != null)
+            Console.WriteLine(_operation(5));  // Call function delegate 
+        else Console.WriteLine("Exit");
     }
 }
