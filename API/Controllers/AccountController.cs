@@ -143,7 +143,7 @@ public class ExampleDelegateService
     }
     public void delegateFunc(int a)
     {
-        Console.WriteLine(a);
+        Console.WriteLine(a + a);
     }
     public void callingFunc()
     {
