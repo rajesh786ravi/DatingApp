@@ -133,3 +133,20 @@ public class MyDelegateService // Created my delegate service
         else Console.WriteLine("Exit");
     }
 }
+
+public class ExampleDelegateService
+{
+    public int _delegateFunc;
+    public ExampleDelegateService(int a)
+    {
+        _delegateFunc = a;
+    }
+    public void delegateFunc(int a)
+    {
+        Console.WriteLine(a);
+    }
+    public void callingFunc()
+    {
+        int a = _delegateFunc;
+    }
+}
