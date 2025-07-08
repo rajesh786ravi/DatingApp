@@ -30,9 +30,15 @@ builder.Services.AddSwaggerGen();
 
 // Registering Delegate in DI Container 
 builder.Services.AddSingleton<MyDelegateService>();
-
+builder.Services.AddSingleton<Publisher>();
+builder.Services.AddSingleton<Subscriber>();
 var app = builder.Build();
+var publisher = app.Services.GetRequiredService<Publisher>();
+var subscriber = app.Services.GetRequiredService<Subscriber>();
+publisher.OnPublish += subscriber.OnPublish1;
 
+// Optional: Simulate event (for demo/testing)
+publisher.Publish("Hello from Program.cs!");
 app.UseCors(x => x
 .AllowAnyHeader()
 .AllowAnyMethod()
