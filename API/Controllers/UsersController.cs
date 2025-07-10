@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -18,8 +19,16 @@ public class UsersController(DataContext context) : BaseApiController
     [HttpGet("{id}")] // /api/users/3
     public async Task<ActionResult<AppUser>> GetUser(int id)
     {
-        var users = await context.Users.FindAsync(id);
+        var waitTask = Wait();
+        var userTask = context.Users.FindAsync(id).AsTask();
+        await Task.WhenAll(waitTask, userTask);
+        var users = userTask.Result;
         if (users == null) return NotFound();
         return users;
+    }
+
+    private async Task Wait()
+    {
+        await Task.Delay(10000);
     }
 }
