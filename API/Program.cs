@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-
 // Add services to the container.
 builder.Services.AddControllers();  //Just adding the controller's
 
@@ -20,6 +18,7 @@ builder.Services.AddSingleton<Func<int, string>>(provider => num => $"Processed 
 builder.Services.AddSingleton<EmailService>();
 
 builder.Services.AddCors();
+
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -36,6 +35,13 @@ var app = builder.Build();
 var publisher = app.Services.GetRequiredService<Publisher>();
 var subscriber = app.Services.GetRequiredService<Subscriber>();
 publisher.OnPublish += subscriber.OnPublish1;
+
+// Apply migrations on startup (only for development or testing)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+    db.Database.Migrate(); // Apply migrations programmatically
+}
 
 // Optional: Simulate event (for demo/testing)
 publisher.Publish("Hello from Program.cs!");
