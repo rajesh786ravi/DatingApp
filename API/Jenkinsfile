@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/rajesh786ravi/DatingApp.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('API') {
+                    sh 'dotnet build'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('API') {
+                    sh 'dotnet test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying API...'
+                // Add your deployment commands here
+            }
+        }
+    }
+}
