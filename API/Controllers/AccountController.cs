@@ -8,14 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class RequestTimingMiddleware
+public class RequestTimingMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public RequestTimingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    private readonly RequestDelegate _next = next;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -159,19 +154,18 @@ public class MyDelegateService // Created my delegate service
     }
 }
 
-public class ExampleDelegateService
+public class ExampleDelegateService(int a)
 {
-    public int _delegateFunc;
-    public ExampleDelegateService(int a)
-    {
-        _delegateFunc = a;
-    }
-    public void delegateFunc(int a)
+    public int _delegateFunc = a;
+
+    public void DelegateFunc(int a)
     {
         Console.WriteLine(a + a + a + a);
     }
-    public void callingFunc()
+    public void CallingFunc()
     {
         int a = _delegateFunc;
     }
+
+
 }

@@ -35,10 +35,10 @@ builder.Services.AddSingleton<MyDelegateService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddSingleton<Publisher>();
 builder.Services.AddSingleton<Subscriber>();
+builder.Services.AddSingleton<AzureQueueDemo.Services.AzureQueueService>();
 
 // Registering google drive service
 builder.Services.AddSingleton<GoogleDriveService>();
-
 
 var app = builder.Build();
 app.UseMiddleware<RequestTimingMiddleware>();
