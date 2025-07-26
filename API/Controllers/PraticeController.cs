@@ -1,7 +1,4 @@
-using System.Security.Cryptography;
 using System.Text;
-using API.Data;
-using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -10,6 +7,19 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class PracticeController() : ControllerBase
 {
+    private decimal _amount;
+    public decimal Amount
+    {
+        get
+        {
+            return _amount;
+        }
+        set
+        {
+            _amount = value;
+
+        }
+    }
     [HttpGet("CheckPalindromeOrNot")]
     public string CheckPalindromeOrNot(string input)
     {
@@ -101,32 +111,16 @@ public class PracticeController() : ControllerBase
         // Step 7: Return the fully merged and sorted array
         return mergeArray;
     }
-
-
-    public void ReverseAString(string input)
+    public string ReverseAString(string input)
     {
         string result = string.Empty;
         for (int i = input.Length - 1; i >= 0; i--)
         {
             result += input[i];
         }
+        return result;
     }
-
-    public bool CheckPalindromeOrNot_V1(string input)
-    {
-        string clonedInput = input;
-        int start = 0;
-        int end = input.Length - 1;
-        while (start < end)
-        {
-            if (clonedInput[start] != clonedInput[end]) return false;
-            start++;
-            end--;
-        }
-        return true;
-    }
-
-    public static void FindSecondLargest(int[] numbers)
+    public static void FindSecondLargestNumber(int[] numbers)
     {
         // Check if array has at least two elements
         if (numbers.Length < 2)
@@ -197,40 +191,57 @@ public class PracticeController() : ControllerBase
         else return input * FactorialOfNumber(input - 1);
     }
 
-    public static bool IsArmstrong(int number)
+    #region IsArmstrong
+
+    // Main method to check if a number is Armstrong or not
+    [HttpGet("IsArmstrong")]
+    public bool IsArmstrong(int number)
     {
+        // Step 1: Count how many digits are in the number (e.g., 153 → 3 digits)
         int digits = CountDigits(number);
+
+        // Step 2: Compute the sum of each digit raised to the power of 'digits'
         int sum = SumOfPowers(number, digits);
+
+        // Step 3: If the sum of powered digits equals the original number → Armstrong!
         return sum == number;
     }
-
-    // Recursive method to count digits
-    private static int CountDigits(int num)
+    // Recursively counts the number of digits in a number
+    private static int CountDigits(int number)
     {
-        if (num == 0)
-            return 0;
-        return 1 + CountDigits(num / 10);
-    }
-
-    // Recursive method to compute sum of powered digits
-    private static int SumOfPowers(int num, int power)
-    {
-        if (num == 0)
+        // Base case: when number becomes 0, stop recursion
+        if (number == 0)
             return 0;
 
-        int digit = num % 10;
-        return Power(digit, power) + SumOfPowers(num / 10, power);
+        // Recursive case: divide by 10 to remove one digit,
+        // and add 1 to count this digit
+        return 1 + CountDigits(number / 10);
     }
+    // Recursively calculates the sum of each digit raised to the power of 'power'
+    private static int SumOfPowers(int number, int power)
+    {
+        // Base case: if number is 0, return 0 (no more digits)
+        if (number == 0)
+            return 0;
 
-    // Recursive method to calculate digit^power
+        // Get last digit of the number
+        int digit = number % 10;
+
+        // Raise the digit to the given power using recursive Power() method
+        // and add the result of the remaining digits
+        return Power(digit, power) + SumOfPowers(number / 10, power);
+    }
+    // Recursively computes baseNum raised to the power of exp
     private static int Power(int baseNum, int exp)
     {
+        // Base case: any number raised to power 0 is 1
         if (exp == 0)
             return 1;
+
+        // Recursive case: baseNum^exp = baseNum * baseNum^(exp - 1)
         return baseNum * Power(baseNum, exp - 1);
     }
-
-
+    #endregion IsArmstrong
 }
 
 public class ArrayRequest

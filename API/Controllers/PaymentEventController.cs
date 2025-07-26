@@ -15,12 +15,12 @@ namespace API.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentController_V1 : ControllerBase
+    public class PaymentEventController : ControllerBase
     {
         private readonly PaymentProcessor_V1 _paymentProcessor = new PaymentProcessor_V1();
         private readonly PaymentMethods_V1 _paymentMethods = new PaymentMethods_V1();
 
-        public PaymentController_V1()
+        public PaymentEventController()
         {
             // Step 4: Subscribe to the event
             _paymentProcessor.PaymentCompleted += OnPaymentCompleted;

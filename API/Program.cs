@@ -41,6 +41,9 @@ builder.Services.AddSingleton<AzureQueueDemo.Services.AzureQueueService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 
 var app = builder.Build();
+
+app.UseRouting();
+
 app.UseMiddleware<RequestTimingMiddleware>();
 var publisher = app.Services.GetRequiredService<Publisher>();
 var subscriber = app.Services.GetRequiredService<Subscriber>();
@@ -78,6 +81,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapGet("/", () => "App is running");
+
 app.MapControllers();
 
 app.Run();
+

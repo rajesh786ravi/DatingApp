@@ -5,15 +5,14 @@ namespace API.Controllers
     // ✅ Step 1: Declare the delegate type
     // This allows any method that takes decimal and returns void to be plugged in
     public delegate void PaymentDelegate(decimal amount);
-
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentController : ControllerBase
+    public class PaymentController(PaymentProcessor processor, PaymentMethods methods) : ControllerBase
     {
         // ✅ Step 2: Create processor and method service instances
         // These simulate business logic layers
-        private readonly PaymentProcessor _paymentProcessor = new PaymentProcessor();
-        private readonly PaymentMethods _paymentMethods = new PaymentMethods();
+        private readonly PaymentProcessor _paymentProcessor = processor;
+        private readonly PaymentMethods _paymentMethods = methods;
 
         // ✅ Step 3: Endpoint using CreditCard payment via delegate
         // Usage: GET /api/payment/credit?amount=1000
