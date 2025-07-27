@@ -41,15 +41,9 @@ public class DriveController : ControllerBase
     [HttpPost("update-drive")]
     public async Task<IActionResult> UpdateDrive()
     {
-        var path = System.IO.File.ReadAllText("admin_path.txt");
-
-        if (!System.IO.File.Exists(path))
-            return BadRequest("File does not exist.");
-
-        string mimeType = "text/plain"; // You can infer this from extension if needed
-
-        var fileId = await _driveService.UploadOrReplaceFileAsync(path, mimeType);
-
+        string txtPath = Path.Combine(Directory.GetCurrentDirectory(), "admin_path.txt");
+        var path = System.IO.File.ReadAllText(txtPath);
+        var fileId = await _driveService.UploadAllFilesFromFolderAsync(path);
         return Ok(new { Message = "Drive updated", FileId = fileId });
     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using API.Data;
 using API.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace API.Controllers;
 public class UsersController(DataContext context) : BaseApiController
 {
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
     {
         var users = await context.Users.ToListAsync();
@@ -17,6 +19,7 @@ public class UsersController(DataContext context) : BaseApiController
     }
 
     [HttpGet("{id}")] // /api/users/3
+    [Authorize]
     public async Task<ActionResult<AppUser>> GetUser(int id)
     {
         var waitTask = Wait();
@@ -29,6 +32,6 @@ public class UsersController(DataContext context) : BaseApiController
 
     private async Task Wait()
     {
-        await Task.Delay(10000);
+        await Task.Delay(5000);
     }
 }

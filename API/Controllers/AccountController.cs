@@ -30,7 +30,6 @@ public class RequestTimingMiddleware(RequestDelegate next)
 public class AccountController(DataContext context, EmailService emailService, MyDelegateService myDelegateService) : BaseApiController
 {
     private readonly EmailService _emailService = emailService;
-
     private readonly DataContext _context = context;
     private readonly MyDelegateService _myDelegateService = myDelegateService ?? throw new ArgumentNullException(nameof(myDelegateService));
 

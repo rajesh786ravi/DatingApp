@@ -2,6 +2,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Microsoft.AspNetCore.StaticFiles;
 using File = Google.Apis.Drive.v3.Data.File;
 
 namespace API.Services;
@@ -62,30 +63,34 @@ public class GoogleDriveService
         FilesResource.CreateMediaUpload uploadRequest;
         FilesResource.UpdateMediaUpload updateRequest;
 
-        using (var stream = new FileStream(localFilePath, FileMode.Open))
+        using var stream = new FileStream(localFilePath, FileMode.Open);
+        if (result.Files != null && result.Files.Count > 0)
         {
-            if (result.Files != null && result.Files.Count > 0)
-            {
-                // File with same name exists → Update it
-                var existingFile = result.Files.First();
+            // File with same name exists → Update it
+            var existingFile = result.Files.First();
 
-                updateRequest = _driveService.Files.Update(fileMetadata, existingFile.Id, stream, mimeType);
-                await updateRequest.UploadAsync();
+            updateRequest = _driveService.Files.Update(fileMetadata, existingFile.Id, stream, mimeType);
+            await updateRequest.UploadAsync();
 
-                return existingFile.Id; // Return updated file ID
-            }
-            else
-            {
-                // File doesn't exist → Create new
-                uploadRequest = _driveService.Files.Create(fileMetadata, stream, mimeType);
-                uploadRequest.Fields = "id";
-                await uploadRequest.UploadAsync();
-                return uploadRequest.ResponseBody.Id; // Return new file ID
-            }
+            return existingFile.Id; // Return updated file ID
+        }
+        else
+        {
+            // File doesn't exist → Create new
+            uploadRequest = _driveService.Files.Create(fileMetadata, stream, mimeType);
+            uploadRequest.Fields = "id";
+            await uploadRequest.UploadAsync();
+            return uploadRequest.ResponseBody.Id; // Return new file ID
         }
     }
-    public async Task<string> UploadOrReplaceFileAsync(string localFilePath, string mimeType)
+    public async Task<string> UploadOrReplaceFileAsync(string localFilePath)
     {
+        // Detect MIME type (based on extension)
+        var provider = new FileExtensionContentTypeProvider();
+        if (!provider.TryGetContentType(localFilePath, out var mimeType))
+        {
+            mimeType = "application/octet-stream"; // Fallback generic binary type
+        }
         var fileName = Path.GetFileName(localFilePath);
 
         // Step 1: Check if file already exists in Drive
@@ -121,5 +126,24 @@ public class GoogleDriveService
             return uploadRequest.ResponseBody.Id;
         }
     }
+
+    public async Task<List<string>> UploadAllFilesFromFolderAsync(string folderPath)
+    {
+        var uploadedFileIds = new List<string>();
+
+        if (!Directory.Exists(folderPath))
+            throw new DirectoryNotFoundException($"Folder does not exist: {folderPath}");
+
+        var files = Directory.GetFiles(folderPath); // No subdirectories
+
+        foreach (var filePath in files)
+        {
+            var fileId = await UploadOrReplaceFileAsync(filePath);
+            uploadedFileIds.Add(fileId);
+        }
+
+        return uploadedFileIds;
+    }
+
 
 }
