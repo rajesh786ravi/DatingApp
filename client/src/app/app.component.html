@@ -180,7 +180,6 @@
         <div *ngIf="showLoader" class="overlay">
             <div class="spinner">Loading...</div>
         </div>
-        <button (click)="openLink('https://google.com')">Go to Google</button>
         <div class="left-side">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 982 239" fill="none" class="angular-logo">
                 <g clip-path="url(#a)">
@@ -212,8 +211,11 @@
             <!-- Changes for google drive -->
             <form>
                 <label for="path">Enter Path:</label>
-                <input type="text" id="path" name="path" [(ngModel)]="localPath" required />
-
+                <!-- Folder Picker -->
+                <input type="file" webkitdirectory directory (change)="onFolderSelected($event)" style="display: none"
+                    #folderInput />
+                <!-- Browse Button -->
+                <button type="button" (click)="folderInput.click()">Browse Folder</button>
                 <button type="button" (click)="savePath()">Save Path</button>
                 <button type="button" (click)="updateDrive()">Update Drive</button>
             </form>

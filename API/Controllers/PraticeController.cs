@@ -1,5 +1,7 @@
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace API.Controllers;
 
@@ -110,6 +112,21 @@ public class PracticeController() : ControllerBase
 
         // Step 7: Return the fully merged and sorted array
         return mergeArray;
+    }
+
+    [HttpGet("IsArmStrongNumber")]
+    public bool IsArmStrongNumber(int num)
+    {
+        int original = num;
+        int sum = 0;
+        int digits = (int)num.ToString().Length;
+        while (num > 0)
+        {
+            int digit = num % 10;
+            sum += (int)Math.Pow(digit, digits);
+            num /= 10;
+        }
+        return original == sum;
     }
 }
 

@@ -46,6 +46,4 @@ public class DriveController : ControllerBase
         var fileId = await _driveService.UploadAllFilesFromFolderAsync(path);
         return Ok(new { Message = "Drive updated", FileId = fileId });
     }
-
-
 }

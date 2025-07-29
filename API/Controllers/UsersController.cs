@@ -19,7 +19,6 @@ public class UsersController(DataContext context) : BaseApiController
     }
 
     [HttpGet("{id}")] // /api/users/3
-    [Authorize]
     public async Task<ActionResult<AppUser>> GetUser(int id)
     {
         var waitTask = Wait();

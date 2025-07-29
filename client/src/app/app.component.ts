@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class AppComponent implements OnInit {
   showLoader = false;
   http = inject(HttpClient);
-  title = 'DatingApp';
+  title = 'Rajesh';
   users: any;
   localPath: string = '';
 
@@ -39,6 +39,17 @@ export class AppComponent implements OnInit {
       next: (res) => alert('Path saved!'),
       error: (err) => alert('Failed to save path...')
     });
+  }
+
+  onFolderSelected(event: any) {
+    const files: FileList = event.target.files;
+    debugger
+    if (files.length > 0) {
+      // Get folder path from first file
+      const fullPath = (files[0] as any).webkitRelativePath;
+      const folder = fullPath.split('/')[0]; // extract folder name
+      this.localPath = folder;
+    }
   }
 
   updateDrive(): void {

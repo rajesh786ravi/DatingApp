@@ -2,11 +2,20 @@ using System.Text;
 using API.Controllers;
 using API.Data;
 using API.Services;
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Diagnostics;
+using System.Text.Json;
+using Datadog.Trace;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Enable Datadog tracing
+builder.Services.AddOpenTelemetry(); // optional for metrics
 
 // ✅ Disable all logging providers (optional for clean console)
 builder.Logging.ClearProviders();
@@ -39,12 +48,28 @@ builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Key Vault
+var keyVaultUrl = "https://ourkeyvaultname.vault.azure.net/";
+builder.Configuration.AddAzureKeyVault(
+    new Uri(keyVaultUrl),
+    new DefaultAzureCredential());
+
+var jwtKey = builder.Configuration["JWT-Key"];
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT key is missing from configuration or Key Vault.");
+}
 // JWT Token
 var jwtSection = builder.Configuration.GetSection("Jwt");
-builder.Services.Configure<JwtSettings>(jwtSection);
+builder.Services.Configure<JwtSettings>(options =>
+{
+    builder.Configuration.GetSection("Jwt").Bind(options);
+    options.Key = jwtKey;
+});
 
 var jwtSettings = jwtSection.Get<JwtSettings>();
-var key = Encoding.ASCII.GetBytes(jwtSettings!.Key!);
+// var key = Encoding.ASCII.GetBytes(jwtSettings!.Key!);
+var key = Encoding.ASCII.GetBytes(jwtKey!);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -60,9 +85,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = true,
-        ValidIssuer = jwtSettings.Issuer,
+        ValidIssuer = jwtSettings?.Issuer,
         ValidateAudience = true,
-        ValidAudience = jwtSettings.Audience,
+        ValidAudience = jwtSettings?.Audience,
         ValidateLifetime = true
     };
 });
@@ -70,13 +95,48 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// app.UseExceptionHandler(errorApp =>
+// {
+//     errorApp.Run(async context =>
+//     {
+//         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+//         var path = context.Request.Path;
+//         var method = context.Request.Method;
+
+//         logger.LogError("🚨 Global exception handler triggered for {Method} {Path}", method, path);
+//         Console.WriteLine($"[GlobalExceptionHandler] Path: {path}, Method: {method}");
+
+//         context.Response.StatusCode = 500;
+//         context.Response.ContentType = "application/json";
+
+//         var feature = context.Features.Get<IExceptionHandlerFeature>();
+//         if (feature != null)
+//         {
+//             var exception = feature.Error;
+//             logger.LogError(exception, "Unhandled exception occurred");
+
+//             var response = new
+//             {
+//                 error = true,
+//                 message = app.Environment.IsDevelopment()
+//                     ? exception.Message
+//                     : "Internal server error"
+//             };
+
+//             await context.Response.WriteAsJsonAsync(response);
+//         }
+//     });
+// });
+
 // ✅ Enable request timing middleware
 app.UseMiddleware<RequestTimingMiddleware>();
 
 // ✅ Setup pub-sub (demo/test scenario)
 var publisher = app.Services.GetRequiredService<Publisher>();
 var subscriber = app.Services.GetRequiredService<Subscriber>();
-publisher.OnPublish += subscriber.OnPublish1;
+publisher.OnPublish += subscriber.Subscriber1;
+publisher.OnPublish += subscriber.Subscriber2;
 publisher.Publish("Hello from Program.cs!");
 
 // ✅ Apply pending EF migrations on startup
@@ -115,6 +175,15 @@ if (app.Environment.IsDevelopment())
 
 // ✅ Map API endpoints and default route
 app.MapControllers(); // Maps [ApiController] routes like /api/payment
+
+// Create manual trace scope
+// app.Use(async (context, next) =>
+// {
+//     using var scope = Tracer.Instance.StartActive("web.request");
+//     scope.Span.ResourceName = $"{context.Request.Method} {context.Request.Path}";
+//     await next.Invoke();
+// });
+
 app.MapGet("/", () => "App is running"); // Root welcome message
 
 app.Run();

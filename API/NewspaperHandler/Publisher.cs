@@ -1,3 +1,4 @@
+namespace API.Services;
 public class Publisher
 {
     public delegate void MyNewspaperPublish(string message);

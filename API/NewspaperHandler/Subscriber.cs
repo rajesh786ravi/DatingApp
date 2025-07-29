@@ -1,7 +1,12 @@
+namespace API.Services;
 public class Subscriber
 {
-    public void OnPublish1(string message)
+    public void Subscriber1(string message)
     {
-        System.Console.WriteLine("Publishing: " + message);
+        System.Console.WriteLine("Subscriber 1: " + message);
+    }
+    public void Subscriber2(string message)
+    {
+        System.Console.WriteLine("Subscriber 2: " + message);
     }
 }
