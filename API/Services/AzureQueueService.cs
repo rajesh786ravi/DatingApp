@@ -1,5 +1,4 @@
 using Azure.Storage.Queues;
-using Microsoft.Extensions.Configuration;
 
 namespace AzureQueueDemo.Services;
 

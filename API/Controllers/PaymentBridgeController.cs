@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using AzureQueueDemo.Services;
 
 [ApiController]
 [Route("api/[controller]")]

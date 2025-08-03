@@ -1,5 +1,3 @@
-using System;
-using System.Runtime.CompilerServices;
 using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Authorization;

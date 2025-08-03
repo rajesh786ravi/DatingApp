@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
 // Using Events + Delegates
 // Step Description
 // 1	PaymentDelegate_V1 and PaymentCompletedEventHandler declared
@@ -17,8 +16,8 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class PaymentEventController : ControllerBase
     {
-        private readonly PaymentProcessor_V1 _paymentProcessor = new PaymentProcessor_V1();
-        private readonly PaymentMethods_V1 _paymentMethods = new PaymentMethods_V1();
+        private readonly PaymentProcessor_V1 _paymentProcessor = new();
+        private readonly PaymentMethods_V1 _paymentMethods = new();
 
         public PaymentEventController()
         {

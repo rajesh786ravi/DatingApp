@@ -1,7 +1,4 @@
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace API.Controllers;
 
@@ -135,5 +132,3 @@ public class ArrayRequest
     public required int[] Array1 { get; set; }
     public required int[] Array2 { get; set; }
 }
-
-

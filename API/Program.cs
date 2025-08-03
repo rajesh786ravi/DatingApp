@@ -4,21 +4,34 @@ using API.Data;
 using API.Services;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Diagnostics;
-using System.Text.Json;
-using Datadog.Trace;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Enable Datadog tracing
 builder.Services.AddOpenTelemetry(); // optional for metrics
 
+// Use App Insights with Connection String
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = "InstrumentationKey=a9d6e51b-fbbe-4ab0-8873-0388b179ef98;IngestionEndpoint=https://canadacentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://canadacentral.livediagnostics.monitor.azure.com/;ApplicationId=7f34b597-3fc5-43c7-b205-66dad63cb82f";
+});
+
 // ✅ Disable all logging providers (optional for clean console)
 builder.Logging.ClearProviders();
+
+// Add config-based logging setup
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+
+builder.Logging
+    .AddConsole()
+    .AddApplicationInsights();
+
+// Add logging filter manually if you want to be sure
+builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(
+    "", LogLevel.Information);
 
 // ✅ Register services
 builder.Services.AddControllers(); // Enables [ApiController] based routing
@@ -39,7 +52,6 @@ builder.Services.AddSingleton<Subscriber>();
 builder.Services.AddSingleton<AzureQueueDemo.Services.AzureQueueService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<JwtTokenService>();
-
 
 // ✅ CORS
 builder.Services.AddCors();
@@ -68,7 +80,6 @@ builder.Services.Configure<JwtSettings>(options =>
 });
 
 var jwtSettings = jwtSection.Get<JwtSettings>();
-// var key = Encoding.ASCII.GetBytes(jwtSettings!.Key!);
 var key = Encoding.ASCII.GetBytes(jwtKey!);
 
 builder.Services.AddAuthentication(options =>
@@ -92,42 +103,22 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var config = builder.Configuration.GetSection("CosmosDb");
+
+    string account = config["Account"] ?? throw new InvalidOperationException("CosmosDb:Account not found");
+    string key = config["Key"] ?? throw new InvalidOperationException("CosmosDb:Key not found");
+    string database = config["DatabaseName"] ?? throw new InvalidOperationException("CosmosDb:DatabaseName not found");
+    string container = config["ContainerName"] ?? throw new InvalidOperationException("CosmosDb:ContainerName not found");
+
+    // ✅ Explicitly use key-based constructor
+    CosmosClient client = new CosmosClient(account, key);
+
+    return new CosmosDbService(client, database, container);
+});
 
 var app = builder.Build();
-
-// app.UseExceptionHandler(errorApp =>
-// {
-//     errorApp.Run(async context =>
-//     {
-//         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-
-//         var path = context.Request.Path;
-//         var method = context.Request.Method;
-
-//         logger.LogError("🚨 Global exception handler triggered for {Method} {Path}", method, path);
-//         Console.WriteLine($"[GlobalExceptionHandler] Path: {path}, Method: {method}");
-
-//         context.Response.StatusCode = 500;
-//         context.Response.ContentType = "application/json";
-
-//         var feature = context.Features.Get<IExceptionHandlerFeature>();
-//         if (feature != null)
-//         {
-//             var exception = feature.Error;
-//             logger.LogError(exception, "Unhandled exception occurred");
-
-//             var response = new
-//             {
-//                 error = true,
-//                 message = app.Environment.IsDevelopment()
-//                     ? exception.Message
-//                     : "Internal server error"
-//             };
-
-//             await context.Response.WriteAsJsonAsync(response);
-//         }
-//     });
-// });
 
 // ✅ Enable request timing middleware
 app.UseMiddleware<RequestTimingMiddleware>();
@@ -175,14 +166,6 @@ if (app.Environment.IsDevelopment())
 
 // ✅ Map API endpoints and default route
 app.MapControllers(); // Maps [ApiController] routes like /api/payment
-
-// Create manual trace scope
-// app.Use(async (context, next) =>
-// {
-//     using var scope = Tracer.Instance.StartActive("web.request");
-//     scope.Span.ResourceName = $"{context.Request.Method} {context.Request.Path}";
-//     await next.Invoke();
-// });
 
 app.MapGet("/", () => "App is running"); // Root welcome message
 
