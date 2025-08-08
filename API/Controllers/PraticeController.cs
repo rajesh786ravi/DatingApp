@@ -125,6 +125,26 @@ public class PracticeController() : ControllerBase
         }
         return original == sum;
     }
+
+    [HttpGet("LengthOfLongestSubstring")]
+    public int LengthOfLongestSubstring(string s)
+    {
+        HashSet<char> set = new HashSet<char>();
+        int maxLen = 0, start = 0;
+
+        for (int end = 0; end < s.Length; end++)
+        {
+            while (set.Contains(s[end]))
+            {
+                set.Remove(s[start]);
+                start++;
+            }
+            set.Add(s[end]);
+            maxLen = Math.Max(maxLen, end - start + 1);
+        }
+        return maxLen;
+    }
+
 }
 
 public class ArrayRequest

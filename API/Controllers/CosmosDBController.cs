@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ItemsController : ControllerBase
+public class CosmosDBController : ControllerBase
 {
     private readonly CosmosDbService _cosmosDbService;
 
-    public ItemsController(CosmosDbService cosmosDbService)
+    public CosmosDBController(CosmosDbService cosmosDbService)
     {
         _cosmosDbService = cosmosDbService;
     }

@@ -165,6 +165,4 @@ public class ExampleDelegateService(int a)
     {
         int a = _delegateFunc;
     }
-
-
 }
