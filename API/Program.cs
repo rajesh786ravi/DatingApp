@@ -61,17 +61,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Key Vault
-var keyVaultUrl = "https://ourkeyvaultname.vault.azure.net/";
-builder.Configuration.AddAzureKeyVault(
-    new Uri(keyVaultUrl),
-    new DefaultAzureCredential());
+// var keyVaultUrl = "https://ourkeyvaultname.vault.azure.net/";
+// builder.Configuration.AddAzureKeyVault(
+//     new Uri(keyVaultUrl),
+//     new DefaultAzureCredential());
 
-var jwtKey = builder.Configuration["JWT-Key"];
+
+// JWT Token
+var jwtKey = builder.Configuration["JWT:Key"];
 if (string.IsNullOrEmpty(jwtKey))
 {
     throw new InvalidOperationException("JWT key is missing from configuration or Key Vault.");
 }
-// JWT Token
+
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(options =>
 {
