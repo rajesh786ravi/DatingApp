@@ -19,14 +19,24 @@ public class UsersController(DataContext context) : BaseApiController
     [HttpGet("{id}")] // /api/users/3
     public async Task<ActionResult<AppUser>> GetUser(int id)
     {
+        // Start delay task
         var waitTask = Wait();
-        var userTask = context.Users.FindAsync(id).AsTask();
+
+        // Eager loading example: include related Posts
+        var userTask = context.Users
+                              .Include(u => u.Posts) // eager load navigation property
+                              .FirstOrDefaultAsync(u => u.Id == id);
+
+        // Wait for both tasks to complete
         await Task.WhenAll(waitTask, userTask);
-        var users = userTask.Result;
-        if (users == null) return NotFound();
-        return users;
+
+        var user = userTask.Result;
+
+        if (user == null) return NotFound();
+        return user;
     }
 
+    // Simulated delay
     private async Task Wait()
     {
         await Task.Delay(5000);

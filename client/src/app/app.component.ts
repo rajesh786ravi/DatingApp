@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WeatherComponent } from './weather/weather.component';
+import { CommonService } from './common.service';
 
 // @Component({
 //   selector: 'app-root',
@@ -30,7 +31,6 @@ export class AppComponent implements OnInit {
   localPath: string = '';
 
   ngOnInit(): void {
-    debugger
     localStorage.setItem('authToken', "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsImV4cCI6MTc1NTc5Njk0OCwiaXNzIjoiZGF0aW5nYXBwIiwiYXVkIjoiZGF0aW5nYXBwIn0.baKaPCclFChFRTcA_G2ajTljilTdHl6vL2xnJACn8Y8");
     this.http.get('https://localhost:5001/api/users').subscribe({
       next: response => this.users = response,

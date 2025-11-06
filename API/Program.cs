@@ -3,9 +3,13 @@ using API.Controllers;
 using API.Data;
 using API.Services;
 using Azure.Identity;
+using AzureQueueDemo.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,11 +34,26 @@ builder.Logging
     .AddApplicationInsights();
 
 // Add logging filter manually if you want to be sure
-builder.Logging.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>(
+builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>(
     "", LogLevel.Information);
 
 // ✅ Register services
 builder.Services.AddControllers(); // Enables [ApiController] based routing
+
+// Enable API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true; // If version not specified, use default
+    options.DefaultApiVersion = new ApiVersion(2, 0);   // Default version: v1.0
+    options.ReportApiVersions = true; // Adds API version headers in response
+
+    // Choose versioning method
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new QueryStringApiVersionReader("api-version"),   // e.g. ?api-version=1.0
+        new HeaderApiVersionReader("X-Version"),          // e.g. X-Version: 1.0
+        new UrlSegmentApiVersionReader()                  // e.g. /api/v1/...
+    );
+});
 
 // ✅ Add DbContext using SQLite connection string
 builder.Services.AddDbContext<DataContext>(opt =>
@@ -49,7 +68,7 @@ builder.Services.AddSingleton<MyDelegateService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddSingleton<Publisher>();
 builder.Services.AddSingleton<Subscriber>();
-builder.Services.AddSingleton<AzureQueueDemo.Services.AzureQueueService>();
+builder.Services.AddSingleton<AzureQueueService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<JwtTokenService>();
 
@@ -59,6 +78,9 @@ builder.Services.AddCors();
 // ✅ Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register memory cache service
+builder.Services.AddMemoryCache();
 
 // Key Vault
 // var keyVaultUrl = "https://ourkeyvaultname.vault.azure.net/";
